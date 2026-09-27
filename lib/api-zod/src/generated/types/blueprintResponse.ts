@@ -6,11 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { BlueprintFeature } from './blueprintFeature';
+import type { DatabaseConfig } from './databaseConfig';
 
 export interface BlueprintResponse {
   title: string;
   summary: string;
   platform: string;
+  database: DatabaseConfig;
   features: BlueprintFeature[];
   openQuestions: string[];
   generatedAt: string;

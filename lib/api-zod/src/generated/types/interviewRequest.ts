@@ -5,9 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DatabaseConfig } from './databaseConfig';
 import type { InterviewAnswer } from './interviewAnswer';
 
 export interface InterviewRequest {
   prompt: string;
   answers: InterviewAnswer[];
+  database: DatabaseConfig;
 }

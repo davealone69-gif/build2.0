@@ -27,6 +27,11 @@ export default function BlueprintScreen() {
           <Feather name="check-circle" size={18} color={colors.accentForeground} />
           <Text style={[styles.calloutText, { color: colors.foreground }]}>This brief is saved on this device. It is a source of truth for the Android build, not a claim that source code has already been generated.</Text>
         </View>
+        <View style={[styles.databaseCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.databaseHeader}><Feather name="database" size={17} color={colors.primary} /><Text style={[styles.databaseTitle, { color: colors.foreground }]}>Data layer</Text><Tag label={project.database.engine.toUpperCase()} tone="green" /></View>
+          <Text style={[styles.databaseCopy, { color: colors.mutedForeground }]}>{project.database.persistence} persistence{project.database.authRequired ? ' · authentication required' : ''}</Text>
+          {project.database.schemaNotes ? <Text style={[styles.databaseCopy, { color: colors.mutedForeground }]}>{project.database.schemaNotes}</Text> : null}
+        </View>
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Scope</Text>
         <View style={styles.featureList}>
           {project.features.map((feature) => (
@@ -43,7 +48,9 @@ export default function BlueprintScreen() {
           </>
         ) : null}
         <View style={styles.bottomActions}>
-          <PrimaryButton label="Continue shaping this brief" onPress={() => router.push({ pathname: '/interview', params: { prompt: project.prompt } })} icon="edit-3" />
+          <PrimaryButton label="Continue shaping this brief" onPress={() => router.push({ pathname: '/interview', params: { prompt: project.prompt, database: project.database.engine } })} icon="edit-3" />
+          <GhostButton label="GitHub & builds" onPress={() => router.push('/github')} icon="github" />
+          <GhostButton label="Kotlin + Python guidance" onPress={() => router.push('/knowledge')} icon="book-open" />
           <GhostButton label="Configure local model" onPress={() => router.push('/settings')} icon="cpu" />
         </View>
       </ScrollView>
@@ -64,4 +71,8 @@ const styles = StyleSheet.create({
   featureDescription: { fontSize: 13, lineHeight: 19 },
   openQuestion: { borderWidth: 1, borderRadius: 15, padding: 14, flexDirection: 'row', gap: 10 },
   bottomActions: { gap: 10, marginTop: 28 },
+  databaseCard: { borderWidth: 1, borderRadius: 18, padding: 15, gap: 8, marginTop: 14 },
+  databaseHeader: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  databaseTitle: { flex: 1, fontSize: 15, fontWeight: '700' },
+  databaseCopy: { fontSize: 13, lineHeight: 19 },
 });

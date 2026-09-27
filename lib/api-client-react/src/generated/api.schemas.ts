@@ -14,9 +14,37 @@ export interface InterviewAnswer {
   answer: string;
 }
 
+export type DatabaseConfigEngine = typeof DatabaseConfigEngine[keyof typeof DatabaseConfigEngine];
+
+
+export const DatabaseConfigEngine = {
+  sqlite: 'sqlite',
+  postgresql: 'postgresql',
+  supabase: 'supabase',
+  firebase: 'firebase',
+  none: 'none',
+} as const;
+
+export type DatabaseConfigPersistence = typeof DatabaseConfigPersistence[keyof typeof DatabaseConfigPersistence];
+
+
+export const DatabaseConfigPersistence = {
+  local: 'local',
+  server: 'server',
+  hybrid: 'hybrid',
+} as const;
+
+export interface DatabaseConfig {
+  engine: DatabaseConfigEngine;
+  persistence: DatabaseConfigPersistence;
+  schemaNotes: string;
+  authRequired: boolean;
+}
+
 export interface InterviewRequest {
   prompt: string;
   answers: InterviewAnswer[];
+  database: DatabaseConfig;
 }
 
 export type InterviewResponseKind = typeof InterviewResponseKind[keyof typeof InterviewResponseKind];
@@ -54,14 +82,74 @@ export interface BlueprintFeature {
 export interface BlueprintRequest {
   prompt: string;
   answers: InterviewAnswer[];
+  database: DatabaseConfig;
 }
 
 export interface BlueprintResponse {
   title: string;
   summary: string;
   platform: string;
+  database: DatabaseConfig;
   features: BlueprintFeature[];
   openQuestions: string[];
   generatedAt: string;
+}
+
+export interface GithubRepository {
+  id: number;
+  fullName: string;
+  defaultBranch: string;
+  private: boolean;
+  htmlUrl: string;
+}
+
+export interface GithubRepositoriesResponse {
+  connected: boolean;
+  repositories: GithubRepository[];
+}
+
+export interface GithubWorkflow {
+  id: number;
+  name: string;
+  path: string;
+  state: string;
+}
+
+export interface GithubWorkflowsResponse {
+  workflows: GithubWorkflow[];
+}
+
+export interface GithubPushRequest {
+  path: string;
+  content: string;
+  message: string;
+  branch: string;
+  sha?: string;
+}
+
+export type GithubDispatchRequestInputs = {[key: string]: string};
+
+export interface GithubDispatchRequest {
+  workflowId: string;
+  ref: string;
+  inputs?: GithubDispatchRequestInputs;
+}
+
+export interface GithubWriteResponse {
+  ok: boolean;
+  message: string;
+  url?: string;
+}
+
+export interface GithubRun {
+  id: number;
+  name: string;
+  status: string;
+  conclusion?: string;
+  htmlUrl: string;
+}
+
+export interface GithubRunsResponse {
+  runs: GithubRun[];
 }
 

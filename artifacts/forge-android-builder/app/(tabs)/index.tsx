@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { useColors } from '@/hooks/useColors';
 import { Field, ForgeHeader, GhostButton, PrimaryButton, Tag, uiStyles } from '@/components/ForgeUI';
 import { useForge } from '@/lib/forge-store';
+import type { DatabaseConfig } from '@/lib/types';
 
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { projects } = useForge();
   const [prompt, setPrompt] = useState('');
+  const [database, setDatabase] = useState<DatabaseConfig['engine']>('sqlite');
 
   const start = () => {
     const trimmed = prompt.trim();
     if (!trimmed) return;
-    router.push({ pathname: '/interview', params: { prompt: trimmed } });
+    router.push({ pathname: '/interview', params: { prompt: trimmed, database } });
   };
 
   return (
@@ -33,6 +35,22 @@ export default function HomeScreen() {
           <Text style={[styles.heroTitle, { color: colors.foreground }]}>What are you building?</Text>
           <Text style={[styles.heroCopy, { color: colors.mutedForeground }]}>Start with the outcome, not the screens. Be specific about who it helps.</Text>
           <Field value={prompt} onChangeText={setPrompt} multiline placeholder="e.g. An offline pantry tracker for shared houses..." />
+          <Text style={[styles.inputLabel, { color: colors.foreground }]}>Data storage</Text>
+          <Text style={[styles.inputHint, { color: colors.mutedForeground }]}>Forge includes this choice in the build brief and GitHub handoff.</Text>
+          <View style={styles.databaseGrid}>
+            {([
+              ['sqlite', 'SQLite', 'Local-first'],
+              ['postgresql', 'PostgreSQL', 'Server data'],
+              ['supabase', 'Supabase', 'Hosted backend'],
+              ['firebase', 'Firebase', 'Google cloud'],
+              ['none', 'No database', 'Static / local state'],
+            ] as const).map(([value, label, hint]) => (
+              <Pressable key={value} onPress={() => setDatabase(value)} style={[styles.databaseOption, { borderColor: database === value ? colors.primary : colors.border, backgroundColor: database === value ? colors.secondary : 'transparent' }]}>
+                <Text style={[styles.databaseLabel, { color: colors.foreground }]}>{label}</Text>
+                <Text style={[styles.databaseHint, { color: colors.mutedForeground }]}>{hint}</Text>
+              </Pressable>
+            ))}
+          </View>
           <PrimaryButton label="Start the interview" onPress={start} disabled={!prompt.trim()} icon="arrow-up-right" />
           <View style={styles.trustRow}>
             <Feather name="shield" size={14} color={colors.accentForeground} />
@@ -88,4 +106,10 @@ const styles = StyleSheet.create({
   projectMeta: { flex: 1, gap: 4 },
   projectTitle: { fontSize: 14, fontWeight: '700' },
   projectSummary: { fontSize: 12 },
+  inputLabel: { fontSize: 13, fontWeight: '700', marginTop: 2, marginBottom: -10 },
+  inputHint: { fontSize: 12, lineHeight: 17, marginBottom: -6 },
+  databaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  databaseOption: { width: '48%', minHeight: 58, borderWidth: 1, borderRadius: 14, padding: 11, justifyContent: 'center' },
+  databaseLabel: { fontSize: 13, fontWeight: '700' },
+  databaseHint: { fontSize: 10, marginTop: 4 },
 });

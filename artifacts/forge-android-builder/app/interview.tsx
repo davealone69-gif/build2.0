@@ -9,14 +9,17 @@ import { Field, ForgeHeader, PrimaryButton, ProgressBar, Tag, uiStyles } from '@
 import { useForge } from '@/lib/forge-store';
 import { askLocalModel, buildLocalBlueprint } from '@/lib/local-model';
 import type { Answer } from '@/lib/types';
+import type { DatabaseConfig } from '@/lib/types';
 
 type Question = { questionId: string; question: string; kind: 'text' | 'choice'; options?: string[]; progress: number };
 
 export default function InterviewScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { prompt: rawPrompt } = useLocalSearchParams<{ prompt?: string }>();
+  const { prompt: rawPrompt, database: rawDatabase } = useLocalSearchParams<{ prompt?: string; database?: string }>();
   const prompt = Array.isArray(rawPrompt) ? rawPrompt[0] : rawPrompt ?? '';
+  const databaseEngine = (Array.isArray(rawDatabase) ? rawDatabase[0] : rawDatabase ?? 'sqlite') as DatabaseConfig['engine'];
+  const databaseConfig: DatabaseConfig = { engine: databaseEngine, persistence: databaseEngine === 'postgresql' || databaseEngine === 'supabase' ? 'server' : 'local', schemaNotes: '', authRequired: false };
   const { settings, makeProject, saveProject } = useForge();
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [question, setQuestion] = useState<Question | null>(null);
@@ -31,7 +34,7 @@ export default function InterviewScreen() {
     setBusy(true);
     setError('');
     try {
-      const local = await askLocalModel(settings, prompt, nextAnswers);
+      const local = await askLocalModel(settings, prompt, nextAnswers, databaseConfig);
       setMode('local-model');
       if (local.done) {
         await finish(nextAnswers, 'local-model');
@@ -40,7 +43,7 @@ export default function InterviewScreen() {
       }
     } catch {
       try {
-        const result = await interview.mutateAsync({ data: { prompt, answers: nextAnswers } });
+        const result = await interview.mutateAsync({ data: { prompt, answers: nextAnswers, database: databaseConfig } });
         setQuestion(result.done ? null : { questionId: result.questionId ?? '', question: result.question ?? '', kind: result.kind ?? 'text', options: result.options, progress: result.progress });
         setMode('guided');
       } catch {
@@ -54,8 +57,8 @@ export default function InterviewScreen() {
   const finish = async (finalAnswers: Answer[], finalMode: 'local-model' | 'guided') => {
     setBusy(true);
     try {
-      const local = finalMode === 'local-model' ? await buildLocalBlueprint(settings, prompt, finalAnswers).catch(() => null) : null;
-      const built = local ?? await blueprint.mutateAsync({ data: { prompt, answers: finalAnswers } });
+      const local = finalMode === 'local-model' ? await buildLocalBlueprint(settings, prompt, finalAnswers, databaseConfig).catch(() => null) : null;
+      const built = local ?? await blueprint.mutateAsync({ data: { prompt, answers: finalAnswers, database: databaseConfig } });
       const project = makeProject(built, prompt, finalAnswers, finalMode);
       await saveProject(project);
       router.replace({ pathname: '/blueprint', params: { id: project.id } });

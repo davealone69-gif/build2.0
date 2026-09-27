@@ -13,9 +13,25 @@ export type Blueprint = {
   title: string;
   summary: string;
   platform: string;
+  database: DatabaseConfig;
   features: BlueprintFeature[];
   openQuestions: string[];
   generatedAt: string;
+};
+
+export type DatabaseConfig = {
+  engine: 'sqlite' | 'postgresql' | 'supabase' | 'firebase' | 'none';
+  persistence: 'local' | 'server' | 'hybrid';
+  schemaNotes: string;
+  authRequired: boolean;
+};
+
+export type GithubRepository = {
+  id: number;
+  fullName: string;
+  defaultBranch: string;
+  private: boolean;
+  htmlUrl: string;
 };
 
 export type Project = Blueprint & {

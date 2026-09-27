@@ -11,6 +11,12 @@ const answerSchema = z.object({
 const interviewSchema = z.object({
   prompt: z.string().min(3).max(2000),
   answers: z.array(answerSchema).max(12),
+  database: z.object({
+    engine: z.enum(["sqlite", "postgresql", "supabase", "firebase", "none"]),
+    persistence: z.enum(["local", "server", "hybrid"]),
+    schemaNotes: z.string().max(2000),
+    authRequired: z.boolean(),
+  }),
 });
 
 const questions = [
@@ -68,6 +74,12 @@ router.post("/forge/interview", (req, res) => {
 const blueprintSchema = z.object({
   prompt: z.string().min(3).max(2000),
   answers: z.array(answerSchema).min(1).max(12),
+  database: z.object({
+    engine: z.enum(["sqlite", "postgresql", "supabase", "firebase", "none"]),
+    persistence: z.enum(["local", "server", "hybrid"]),
+    schemaNotes: z.string().max(2000),
+    authRequired: z.boolean(),
+  }),
 });
 
 router.post("/forge/blueprint", (req, res) => {
@@ -77,7 +89,7 @@ router.post("/forge/blueprint", (req, res) => {
     return;
   }
 
-  const { prompt, answers } = parsed.data;
+  const { prompt, answers, database } = parsed.data;
   const title = prompt
     .replace(/^(build|make|create|an app for|a)\s+/i, "")
     .split(/[.!?]/)[0]
@@ -100,6 +112,7 @@ router.post("/forge/blueprint", (req, res) => {
     title,
     summary: `A native Android app for ${answers[0]?.answer ?? "your intended audience"} focused on ${answers[1]?.answer ?? "the main workflow"}.`,
     platform: "Android",
+    database,
     features,
     openQuestions: answers.length < questions.length
       ? ["Connect a local model or answer the remaining interview questions before generating source files."]

@@ -1,1 +1,2 @@
 - [Local model boundary](local-model-boundary.md) — treat local-model connectivity as an explicit capability and never claim a brief is generated Android source.
+- [GitHub connector boundary](github-connector-boundary.md) — keep all repository and Actions access behind the authenticated server-side Replit connector proxy.

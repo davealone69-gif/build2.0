@@ -22,6 +22,12 @@ import type {
 import type {
   BlueprintRequest,
   BlueprintResponse,
+  GithubDispatchRequest,
+  GithubPushRequest,
+  GithubRepositoriesResponse,
+  GithubRunsResponse,
+  GithubWorkflowsResponse,
+  GithubWriteResponse,
   HealthStatus,
   InterviewRequest,
   InterviewResponse
@@ -307,4 +313,427 @@ export const useCreateBlueprint = <TError = ErrorType<void>,
       > => {
       return useMutation(getCreateBlueprintMutationOptions(options));
     }
+
+export const getListGithubRepositoriesUrl = () => {
+
+
+
+
+  return `/api/forge/github/repos`
+}
+
+/**
+ * @summary List repositories available to the connected GitHub account
+ */
+export const listGithubRepositories = async ( options?: Parameters<typeof customFetch>[1]): Promise<GithubRepositoriesResponse> => {
+
+  return customFetch<GithubRepositoriesResponse>(getListGithubRepositoriesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListGithubRepositoriesQueryKey = () => {
+    return [
+    `/api/forge/github/repos`
+    ] as const;
+    }
+
+
+export const getListGithubRepositoriesQueryOptions = <TData = Awaited<ReturnType<typeof listGithubRepositories>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListGithubRepositoriesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGithubRepositories>>> = ({ signal }) => listGithubRepositories({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListGithubRepositoriesQueryResult = NonNullable<Awaited<ReturnType<typeof listGithubRepositories>>>
+export type ListGithubRepositoriesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List repositories available to the connected GitHub account
+ */
+
+export function useListGithubRepositories<TData = Awaited<ReturnType<typeof listGithubRepositories>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGithubRepositories>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListGithubRepositoriesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListGithubWorkflowsUrl = (owner: string,
+    repo: string,) => {
+
+
+
+
+  return `/api/forge/github/repos/${owner}/${repo}/workflows`
+}
+
+/**
+ * @summary List Actions workflows in a repository
+ */
+export const listGithubWorkflows = async (owner: string,
+    repo: string, options?: Parameters<typeof customFetch>[1]): Promise<GithubWorkflowsResponse> => {
+
+  return customFetch<GithubWorkflowsResponse>(getListGithubWorkflowsUrl(owner,repo),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListGithubWorkflowsQueryKey = (owner: string,
+    repo: string,) => {
+    return [
+    `/api/forge/github/repos/${owner}/${repo}/workflows`
+    ] as const;
+    }
+
+
+export const getListGithubWorkflowsQueryOptions = <TData = Awaited<ReturnType<typeof listGithubWorkflows>>, TError = ErrorType<unknown>>(owner: string,
+    repo: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGithubWorkflows>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListGithubWorkflowsQueryKey(owner,repo);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGithubWorkflows>>> = ({ signal }) => listGithubWorkflows(owner,repo, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: owner !== null && owner !== undefined && repo !== null && repo !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGithubWorkflows>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListGithubWorkflowsQueryResult = NonNullable<Awaited<ReturnType<typeof listGithubWorkflows>>>
+export type ListGithubWorkflowsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List Actions workflows in a repository
+ */
+
+export function useListGithubWorkflows<TData = Awaited<ReturnType<typeof listGithubWorkflows>>, TError = ErrorType<unknown>>(
+ owner: string,
+    repo: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGithubWorkflows>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListGithubWorkflowsQueryOptions(owner,repo,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getPushGithubFileUrl = (owner: string,
+    repo: string,) => {
+
+
+
+
+  return `/api/forge/github/repos/${owner}/${repo}/push`
+}
+
+/**
+ * @summary Push one generated project file to GitHub
+ */
+export const pushGithubFile = async (owner: string,
+    repo: string,
+    githubPushRequest: GithubPushRequest, options?: Parameters<typeof customFetch>[1]): Promise<GithubWriteResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<GithubWriteResponse>(getPushGithubFileUrl(owner,repo),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(githubPushRequest)
+  }
+);}
+
+
+
+
+
+export const getPushGithubFileMutationKey = () => ['pushGithubFile'] as const;
+
+export const getPushGithubFileMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof pushGithubFile>>, TError,PushGithubFileMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof pushGithubFile>>, TError,PushGithubFileMutationVariables, TContext> => {
+
+const mutationKey = getPushGithubFileMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof pushGithubFile>>, PushGithubFileMutationVariables> = (props) => {
+          const {owner,repo,data} = props ?? {};
+
+          return  pushGithubFile(owner,repo,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PushGithubFileMutationResult = NonNullable<Awaited<ReturnType<typeof pushGithubFile>>>
+    export type PushGithubFileMutationBody = BodyType<GithubPushRequest>
+    export type PushGithubFileMutationError = ErrorType<unknown>
+    export type PushGithubFileMutationVariables = {owner: string;repo: string;data: BodyType<GithubPushRequest>}
+
+    /**
+ * @summary Push one generated project file to GitHub
+ */
+export const usePushGithubFile = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof pushGithubFile>>, TError,PushGithubFileMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof pushGithubFile>>,
+        TError,
+        PushGithubFileMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPushGithubFileMutationOptions(options));
+    }
+
+export const getDispatchGithubWorkflowUrl = (owner: string,
+    repo: string,) => {
+
+
+
+
+  return `/api/forge/github/repos/${owner}/${repo}/dispatch`
+}
+
+/**
+ * @summary Start a GitHub Actions workflow
+ */
+export const dispatchGithubWorkflow = async (owner: string,
+    repo: string,
+    githubDispatchRequest: GithubDispatchRequest, options?: Parameters<typeof customFetch>[1]): Promise<GithubWriteResponse> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<GithubWriteResponse>(getDispatchGithubWorkflowUrl(owner,repo),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(githubDispatchRequest)
+  }
+);}
+
+
+
+
+
+export const getDispatchGithubWorkflowMutationKey = () => ['dispatchGithubWorkflow'] as const;
+
+export const getDispatchGithubWorkflowMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof dispatchGithubWorkflow>>, TError,DispatchGithubWorkflowMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof dispatchGithubWorkflow>>, TError,DispatchGithubWorkflowMutationVariables, TContext> => {
+
+const mutationKey = getDispatchGithubWorkflowMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof dispatchGithubWorkflow>>, DispatchGithubWorkflowMutationVariables> = (props) => {
+          const {owner,repo,data} = props ?? {};
+
+          return  dispatchGithubWorkflow(owner,repo,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DispatchGithubWorkflowMutationResult = NonNullable<Awaited<ReturnType<typeof dispatchGithubWorkflow>>>
+    export type DispatchGithubWorkflowMutationBody = BodyType<GithubDispatchRequest>
+    export type DispatchGithubWorkflowMutationError = ErrorType<unknown>
+    export type DispatchGithubWorkflowMutationVariables = {owner: string;repo: string;data: BodyType<GithubDispatchRequest>}
+
+    /**
+ * @summary Start a GitHub Actions workflow
+ */
+export const useDispatchGithubWorkflow = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof dispatchGithubWorkflow>>, TError,DispatchGithubWorkflowMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof dispatchGithubWorkflow>>,
+        TError,
+        DispatchGithubWorkflowMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDispatchGithubWorkflowMutationOptions(options));
+    }
+
+export const getListGithubRunsUrl = (owner: string,
+    repo: string,) => {
+
+
+
+
+  return `/api/forge/github/repos/${owner}/${repo}/runs`
+}
+
+/**
+ * @summary List recent GitHub Actions runs
+ */
+export const listGithubRuns = async (owner: string,
+    repo: string, options?: Parameters<typeof customFetch>[1]): Promise<GithubRunsResponse> => {
+
+  return customFetch<GithubRunsResponse>(getListGithubRunsUrl(owner,repo),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListGithubRunsQueryKey = (owner: string,
+    repo: string,) => {
+    return [
+    `/api/forge/github/repos/${owner}/${repo}/runs`
+    ] as const;
+    }
+
+
+export const getListGithubRunsQueryOptions = <TData = Awaited<ReturnType<typeof listGithubRuns>>, TError = ErrorType<unknown>>(owner: string,
+    repo: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGithubRuns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListGithubRunsQueryKey(owner,repo);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGithubRuns>>> = ({ signal }) => listGithubRuns(owner,repo, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: owner !== null && owner !== undefined && repo !== null && repo !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGithubRuns>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListGithubRunsQueryResult = NonNullable<Awaited<ReturnType<typeof listGithubRuns>>>
+export type ListGithubRunsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List recent GitHub Actions runs
+ */
+
+export function useListGithubRuns<TData = Awaited<ReturnType<typeof listGithubRuns>>, TError = ErrorType<unknown>>(
+ owner: string,
+    repo: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGithubRuns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListGithubRunsQueryOptions(owner,repo,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: forge
     description: Local-first app building workflow
+  - name: github
+    description: Authenticated GitHub repository and Actions controls
 paths:
   /healthz:
     get:
@@ -66,6 +68,122 @@ paths:
                 $ref: "#/components/schemas/BlueprintResponse"
         "400":
           description: Invalid blueprint input
+  /forge/github/repos:
+    get:
+      operationId: listGithubRepositories
+      tags: [github]
+      summary: List repositories available to the connected GitHub account
+      responses:
+        "200":
+          description: Accessible repositories
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubRepositoriesResponse"
+  /forge/github/repos/{owner}/{repo}/workflows:
+    get:
+      operationId: listGithubWorkflows
+      tags: [github]
+      summary: List Actions workflows in a repository
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Repository workflows
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubWorkflowsResponse"
+  /forge/github/repos/{owner}/{repo}/push:
+    post:
+      operationId: pushGithubFile
+      tags: [github]
+      summary: Push one generated project file to GitHub
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GithubPushRequest"
+      responses:
+        "200":
+          description: Commit result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubWriteResponse"
+  /forge/github/repos/{owner}/{repo}/dispatch:
+    post:
+      operationId: dispatchGithubWorkflow
+      tags: [github]
+      summary: Start a GitHub Actions workflow
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GithubDispatchRequest"
+      responses:
+        "202":
+          description: Workflow accepted by GitHub
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubWriteResponse"
+  /forge/github/repos/{owner}/{repo}/runs:
+    get:
+      operationId: listGithubRuns
+      tags: [github]
+      summary: List recent GitHub Actions runs
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recent workflow runs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubRunsResponse"
 components:
   schemas:
     HealthStatus:
@@ -94,9 +212,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/InterviewAnswer"
+        database:
+          $ref: "#/components/schemas/DatabaseConfig"
       required:
         - prompt
         - answers
+        - database
     InterviewResponse:
       type: object
       properties:
@@ -141,9 +262,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/InterviewAnswer"
+        database:
+          $ref: "#/components/schemas/DatabaseConfig"
       required:
         - prompt
         - answers
+        - database
     BlueprintResponse:
       type: object
       properties:
@@ -153,6 +277,8 @@ components:
           type: string
         platform:
           type: string
+        database:
+          $ref: "#/components/schemas/DatabaseConfig"
         features:
           type: array
           items:
@@ -167,7 +293,153 @@ components:
         - title
         - summary
         - platform
+        - database
         - features
         - openQuestions
         - generatedAt
+    DatabaseConfig:
+      type: object
+      properties:
+        engine:
+          type: string
+          enum: [sqlite, postgresql, supabase, firebase, none]
+        persistence:
+          type: string
+          enum: [local, server, hybrid]
+        schemaNotes:
+          type: string
+        authRequired:
+          type: boolean
+      required:
+        - engine
+        - persistence
+        - schemaNotes
+        - authRequired
+    GithubRepository:
+      type: object
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        defaultBranch:
+          type: string
+        private:
+          type: boolean
+        htmlUrl:
+          type: string
+      required:
+        - id
+        - fullName
+        - defaultBranch
+        - private
+        - htmlUrl
+    GithubRepositoriesResponse:
+      type: object
+      properties:
+        connected:
+          type: boolean
+        repositories:
+          type: array
+          items:
+            $ref: "#/components/schemas/GithubRepository"
+      required:
+        - connected
+        - repositories
+    GithubWorkflow:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        path:
+          type: string
+        state:
+          type: string
+      required:
+        - id
+        - name
+        - path
+        - state
+    GithubWorkflowsResponse:
+      type: object
+      properties:
+        workflows:
+          type: array
+          items:
+            $ref: "#/components/schemas/GithubWorkflow"
+      required:
+        - workflows
+    GithubPushRequest:
+      type: object
+      properties:
+        path:
+          type: string
+        content:
+          type: string
+        message:
+          type: string
+        branch:
+          type: string
+        sha:
+          type: string
+      required:
+        - path
+        - content
+        - message
+        - branch
+    GithubDispatchRequest:
+      type: object
+      properties:
+        workflowId:
+          type: string
+        ref:
+          type: string
+        inputs:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - workflowId
+        - ref
+    GithubWriteResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        url:
+          type: string
+      required:
+        - ok
+        - message
+    GithubRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        conclusion:
+          type: string
+        htmlUrl:
+          type: string
+      required:
+        - id
+        - name
+        - status
+        - htmlUrl
+    GithubRunsResponse:
+      type: object
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: "#/components/schemas/GithubRun"
+      required:
+        - runs
 

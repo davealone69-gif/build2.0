@@ -25,7 +25,13 @@ export const CreateInterviewQuestionBody = zod.object({
   "answers": zod.array(zod.object({
   "questionId": zod.string(),
   "answer": zod.string()
-}))
+})),
+  "database": zod.object({
+  "engine": zod.enum(['sqlite', 'postgresql', 'supabase', 'firebase', 'none']),
+  "persistence": zod.enum(['local', 'server', 'hybrid']),
+  "schemaNotes": zod.string(),
+  "authRequired": zod.boolean()
+})
 })
 
 export const CreateInterviewQuestionResponse = zod.object({
@@ -46,13 +52,25 @@ export const CreateBlueprintBody = zod.object({
   "answers": zod.array(zod.object({
   "questionId": zod.string(),
   "answer": zod.string()
-}))
+})),
+  "database": zod.object({
+  "engine": zod.enum(['sqlite', 'postgresql', 'supabase', 'firebase', 'none']),
+  "persistence": zod.enum(['local', 'server', 'hybrid']),
+  "schemaNotes": zod.string(),
+  "authRequired": zod.boolean()
+})
 })
 
 export const CreateBlueprintResponse = zod.object({
   "title": zod.string(),
   "summary": zod.string(),
   "platform": zod.string(),
+  "database": zod.object({
+  "engine": zod.enum(['sqlite', 'postgresql', 'supabase', 'firebase', 'none']),
+  "persistence": zod.enum(['local', 'server', 'hybrid']),
+  "schemaNotes": zod.string(),
+  "authRequired": zod.boolean()
+}),
   "features": zod.array(zod.object({
   "name": zod.string(),
   "description": zod.string(),
@@ -60,6 +78,102 @@ export const CreateBlueprintResponse = zod.object({
 })),
   "openQuestions": zod.array(zod.string()),
   "generatedAt": zod.string()
+})
+
+
+/**
+ * @summary List repositories available to the connected GitHub account
+ */
+export const ListGithubRepositoriesResponse = zod.object({
+  "connected": zod.boolean(),
+  "repositories": zod.array(zod.object({
+  "id": zod.number().int(),
+  "fullName": zod.string(),
+  "defaultBranch": zod.string(),
+  "private": zod.boolean(),
+  "htmlUrl": zod.string()
+}))
+})
+
+
+/**
+ * @summary List Actions workflows in a repository
+ */
+export const ListGithubWorkflowsParams = zod.object({
+  "owner": zod.coerce.string(),
+  "repo": zod.coerce.string()
+})
+
+export const ListGithubWorkflowsResponse = zod.object({
+  "workflows": zod.array(zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "path": zod.string(),
+  "state": zod.string()
+}))
+})
+
+
+/**
+ * @summary Push one generated project file to GitHub
+ */
+export const PushGithubFileParams = zod.object({
+  "owner": zod.coerce.string(),
+  "repo": zod.coerce.string()
+})
+
+export const PushGithubFileBody = zod.object({
+  "path": zod.string(),
+  "content": zod.string(),
+  "message": zod.string(),
+  "branch": zod.string(),
+  "sha": zod.string().optional()
+})
+
+export const PushGithubFileResponse = zod.object({
+  "ok": zod.boolean(),
+  "message": zod.string(),
+  "url": zod.string().optional()
+})
+
+
+/**
+ * @summary Start a GitHub Actions workflow
+ */
+export const DispatchGithubWorkflowParams = zod.object({
+  "owner": zod.coerce.string(),
+  "repo": zod.coerce.string()
+})
+
+export const DispatchGithubWorkflowBody = zod.object({
+  "workflowId": zod.string(),
+  "ref": zod.string(),
+  "inputs": zod.record(zod.string(), zod.string()).optional()
+})
+
+export const DispatchGithubWorkflowResponse = zod.object({
+  "ok": zod.boolean(),
+  "message": zod.string(),
+  "url": zod.string().optional()
+})
+
+
+/**
+ * @summary List recent GitHub Actions runs
+ */
+export const ListGithubRunsParams = zod.object({
+  "owner": zod.coerce.string(),
+  "repo": zod.coerce.string()
+})
+
+export const ListGithubRunsResponse = zod.object({
+  "runs": zod.array(zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "status": zod.string(),
+  "conclusion": zod.string().optional(),
+  "htmlUrl": zod.string()
+}))
 })
 
 

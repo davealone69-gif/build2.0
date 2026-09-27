@@ -1,4 +1,4 @@
-import type { Answer, Blueprint, LocalModelSettings } from '@/lib/types';
+import type { Answer, Blueprint, DatabaseConfig, LocalModelSettings } from '@/lib/types';
 
 type ChatResponse = {
   message?: { content?: string };
@@ -12,6 +12,7 @@ export async function askLocalModel(
   settings: LocalModelSettings,
   prompt: string,
   answers: Answer[],
+  database: DatabaseConfig,
 ) {
   const response = await fetch(`${normalizeEndpoint(settings.endpoint)}/api/chat`, {
     method: 'POST',
@@ -27,7 +28,7 @@ export async function askLocalModel(
         },
         {
           role: 'user',
-          content: JSON.stringify({ prompt, answers }),
+          content: JSON.stringify({ prompt, answers, database }),
         },
       ],
     }),
@@ -54,6 +55,7 @@ export async function buildLocalBlueprint(
   settings: LocalModelSettings,
   prompt: string,
   answers: Answer[],
+  database: DatabaseConfig,
 ) {
   const response = await fetch(`${normalizeEndpoint(settings.endpoint)}/api/chat`, {
     method: 'POST',
@@ -70,7 +72,7 @@ export async function buildLocalBlueprint(
         },
         {
           role: 'user',
-          content: JSON.stringify({ prompt, answers }),
+          content: JSON.stringify({ prompt, answers, database }),
         },
       ],
     }),
@@ -83,7 +85,7 @@ export async function buildLocalBlueprint(
   if (!data.message?.content) {
     throw new Error('Local model returned no blueprint');
   }
-  return JSON.parse(data.message.content) as Blueprint;
+  return { ...JSON.parse(data.message.content), database } as Blueprint;
 }
 
 export async function testLocalModel(settings: LocalModelSettings) {
