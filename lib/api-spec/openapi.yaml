@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: forge
+    description: Local-first app building workflow
 paths:
   /healthz:
     get:
@@ -24,6 +26,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /forge/interview:
+    post:
+      operationId: createInterviewQuestion
+      tags: [forge]
+      summary: Create the next app-building interview question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InterviewRequest"
+      responses:
+        "200":
+          description: Next question and completion state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewResponse"
+        "400":
+          description: Invalid interview input
+  /forge/blueprint:
+    post:
+      operationId: createBlueprint
+      tags: [forge]
+      summary: Validate and normalize an app build brief
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlueprintRequest"
+      responses:
+        "200":
+          description: Normalized blueprint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlueprintResponse"
+        "400":
+          description: Invalid blueprint input
 components:
   schemas:
     HealthStatus:
@@ -33,4 +75,99 @@ components:
           type: string
       required:
         - status
+    InterviewAnswer:
+      type: object
+      properties:
+        questionId:
+          type: string
+        answer:
+          type: string
+      required:
+        - questionId
+        - answer
+    InterviewRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterviewAnswer"
+      required:
+        - prompt
+        - answers
+    InterviewResponse:
+      type: object
+      properties:
+        done:
+          type: boolean
+        questionId:
+          type: string
+        question:
+          type: string
+        kind:
+          type: string
+          enum: [text, choice]
+        options:
+          type: array
+          items:
+            type: string
+        progress:
+          type: integer
+      required:
+        - done
+        - progress
+    BlueprintFeature:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [must, should, later]
+      required:
+        - name
+        - description
+        - priority
+    BlueprintRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterviewAnswer"
+      required:
+        - prompt
+        - answers
+    BlueprintResponse:
+      type: object
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+        platform:
+          type: string
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/BlueprintFeature"
+        openQuestions:
+          type: array
+          items:
+            type: string
+        generatedAt:
+          type: string
+      required:
+        - title
+        - summary
+        - platform
+        - features
+        - openQuestions
+        - generatedAt
 

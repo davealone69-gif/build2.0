@@ -1,6 +1,6 @@
-# [Project name]
+# Forge Android Builder
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Forge is an Android-first, local-first app builder that interviews a user about an app idea, validates a build brief through the API, and stores project briefs on-device.
 
 ## Run & Operate
 
@@ -8,8 +8,9 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/forge-android-builder run typecheck` — check the Android client
+- `pnpm --filter @workspace/api-server run typecheck` — check the API
+- No database is required for the current product surface; project briefs persist in the Android client with AsyncStorage.
 
 ## Stack
 
@@ -22,23 +23,38 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/forge-android-builder/app/` — Expo Router screens for Home, Projects, Interview, Blueprint, and local model Settings
+- `artifacts/forge-android-builder/lib/forge-store.tsx` — on-device project and local model settings persistence
+- `artifacts/forge-android-builder/lib/local-model.ts` — Ollama-compatible local model adapter
+- `artifacts/api-server/src/routes/forge.ts` — guided interview and blueprint validation endpoints
+- `lib/api-spec/openapi.yaml` — source of truth for API contracts
+- `artifacts/forge-android-builder/constants/colors.ts` — Forge visual tokens
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The mobile client is local-first: saved briefs use AsyncStorage and do not require an account or cloud database.
+- The LLM boundary is an Ollama-compatible endpoint configured by the user; Forge never pretends a brief is source code or an APK.
+- If the configured local model cannot be reached, the API-backed guided interview remains usable and returns an explicitly labeled guided brief.
+- The Express API owns input validation and deterministic guided questions; OpenAPI remains the contract for generated client types.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Start an app idea from a plain-language prompt.
+- Answer a one-question-at-a-time product interview.
+- Use a configured local model for question generation and brief synthesis.
+- Fall back to a real guided interview when no local model is reachable.
+- Review and persist a structured Android build brief.
+- Reopen or delete local project briefs.
+- Configure and test the local model endpoint.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Do not fabricate generated source files, APKs, completed integrations, or model responses.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- On a physical Android device, `127.0.0.1` points to the phone; configure the computer's LAN IP for the local model endpoint.
+- The Expo workflow logs an optional React Native DevTools warning about a missing system `libglib` library; Metro and the phone preview still run.
 
 ## Pointers
 

@@ -1,0 +1,1 @@
+- [Local model boundary](local-model-boundary.md) — treat local-model connectivity as an explicit capability and never claim a brief is generated Android source.
